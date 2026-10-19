@@ -1,0 +1,34 @@
+[
+  {
+    "columns": "345.945px 283.055px",
+    "font": "Georgia, \"Times New Roman\", serif",
+    "sculpture": "48% 48% 42% 42%",
+    "weight": "400",
+    "words": "ocean, calm, water",
+    "world": "waves"
+  },
+  {
+    "columns": "345.945px 283.055px",
+    "font": "system-ui, sans-serif",
+    "sculpture": "50%",
+    "weight": "800",
+    "words": "friendly, playful, joyful",
+    "world": "particles"
+  },
+  {
+    "columns": "345.945px 283.055px",
+    "font": "system-ui, sans-serif",
+    "sculpture": "2px",
+    "weight": "350",
+    "words": "precise, structured, professional",
+    "world": "grid"
+  },
+  {
+    "columns": "653px",
+    "font": "system-ui, sans-serif",
+    "sculpture": "10%",
+    "weight": "850",
+    "words": "crazy, cool, fun",
+    "world": "aurora"
+  }
+]

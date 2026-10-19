@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Fenton Forge early-access release candidate. Choose three words, transform them into a visual style, preview your page and export an independent HTML file.">
+<title>Fenton Forge · Early-access</title>
+<link rel="stylesheet" href="./styles.css">
+<link rel="stylesheet" href="./living-portal.css">
+<link rel="stylesheet" href="./first-use.css">
+<script defer src="./builder.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar"><div class="container"><a class="brand" href="#main"><span class="brand-icon">F</span><span>FENTON <b>FORGE</b><small>Early-access release candidate</small></span></a><nav aria-label="Main navigation"><a href="#discover">Discover</a><a href="#how">How it works</a><a href="#builder">Builder</a></nav></div></header>
+<main id="main">
+<section id="living-portal" class="hero glass-tide"><div class="container first-look">
+<div class="intro-copy"><p class="eyebrow">Fenton Forge / Living Portal</p>
+<h1>A feeling.<br>Three words.<br><em>Your website.</em></h1>
+<p class="lead">Give your page three visual words. Shape the design, add your story, then download a complete, editable HTML page.</p>
+<div class="actions"><a class="button primary" href="#builder">Choose your three words ↗</a></div>
+<p class="fine">No sign-up or payment. Runs on this device.<br>Local design styles, without AI generation. Hosting is separate.</p>
+<ol class="journey-strip" aria-label="Your journey"><li>Discover</li><li>Imagine</li><li>Transform</li><li>Customise</li><li>Export</li></ol>
+</div>
+<div class="example-panel"><div class="example-caption"><span class="eyebrow">A real, exportable example</span><span class="sample-dot" aria-hidden="true"></span></div>
+<iframe id="example-preview" title="Example website made with Forge" sandbox="" class="example-frame"></iframe>
+<div class="example-choices" aria-label="Compare visual worlds"><button type="button" data-example="tide" aria-pressed="true">ocean · calm · water</button><button type="button" data-example="current" aria-pressed="false">crazy · cool · fun</button><button type="button" data-example="structure" aria-pressed="false">precise · structured · professional</button></div>
+<p id="example-description" class="fine" role="status">Glass Tide: sculpted glass, spacious serif type, a slow tidal drift.</p></div>
+</div></section>
+<section id="discover" class="section container"><p class="eyebrow">Discover</p><h2>Start from a clear idea.</h2><p>Pick a project type below; the builder will use it to suggest content and visual words.</p><div class="cards"><button type="button" class="card" data-category="agency"><span class="number">Agency</span><h3>Creative ideas, calm presentation</h3><p>Start with bold, creative, modern.</p></button><button type="button" class="card" data-category="small-business"><span class="number">Small Business</span><h3>Practical, friendly, easy to use</h3><p>Start with friendly, simple, useful.</p></button><button type="button" class="card" data-category="public-sector"><span class="number">Public Sector</span><h3>Calm, accessible and purposeful</h3><p>Start with calm, accessible, professional.</p></button></div></section>
+<section id="how" class="section container"><p class="eyebrow">How it works</p><h2>Five steps, one file.</h2><div class="cards"><article class="card"><span class="number">Discover</span><h3>Find your idea</h3><p>Choose a starting point and use three words to shape the visual.</p></article><article class="card"><span class="number">Imagine</span><h3>Turn three words into a visual idea</h3><p>The same words always produce the same starting style.</p></article><article class="card"><span class="number">Transform</span><h3>Create the visual</h3><p>Your words guide the palette, motion style, speed and seed.</p></article><article class="card"><span class="number">Customise</span><h3>Edit the details</h3><p>Change the name, headline, description, services, contact details, palette, accent, layout and motion.</p></article><article class="card"><span class="number">Export</span><h3>Download independent HTML</h3><p>Get one self-contained HTML file with your content, visual style and no external requests.</p></article></div></section>
+<section id="builder" class="builder-anchor"><div class="container"><div class="page-heading"><p class="eyebrow">Imagine → Transform → Customise → Export</p><h2>Make a world of your own.</h2><p class="lead">Start with the feeling. Your content comes next. The page beside you is the page you download.</p></div><div class="builder-layout">
+<section class="panel controls-panel" aria-labelledby="form-title"><h2 id="form-title">Your starting point</h2><form id="site-form">
+<details id="imagine-stage" name="forge-stage" open><summary><span>01</span> Imagine the feeling</summary><div class="stage-body">
+<p class="fine" id="word-help">Try a place, a mood and a character. Start with an example below, or mix your own.</p>
+<label class="field" for="word1">A place or energy <span>e.g. ocean, playful, precise</span><input id="word1" name="word1" type="text" maxlength="40" required autocomplete="off" aria-describedby="word-help" value="ocean"></label>
+<label class="field" for="word2">A mood <span>e.g. calm, joyful, cool</span><input id="word2" name="word2" type="text" maxlength="40" required autocomplete="off" value="calm"></label>
+<label class="field" for="word3">A character <span>e.g. water, friendly, structured</span><input id="word3" name="word3" type="text" maxlength="40" required autocomplete="off" value="water"></label>
+<div class="word-examples" aria-label="Suggested words"><button type="button" data-words="ocean,calm,water">Tidal &amp; calm</button><button type="button" data-words="crazy,cool,fun">Bold &amp; expressive</button><button type="button" data-words="friendly,playful,joyful">Warm &amp; playful</button><button type="button" data-words="precise,structured,professional">Quiet &amp; precise</button></div>
+<p class="fine">Four designed worlds respond to the example words. Other words create a repeatable variation; Forge does not interpret every word’s meaning.</p>
+<button id="transform" type="button" class="button secondary">Transform the visual</button>
+</div></details>
+<details id="customise-stage" name="forge-stage"><summary><span>02</span> Add your story</summary><div class="stage-body">
+<label class="field" for="name">Name of website or organisation<input id="name" name="name" type="text" maxlength="80" required autocomplete="organization" value="Tidal Studio"></label>
+<label class="field" for="headline">Headline<input id="headline" name="headline" type="text" maxlength="130" required value="Room for the extraordinary."></label>
+<label class="field" for="about">About your organisation<textarea id="about" name="about" maxlength="700" required rows="5">Thoughtful spaces. Unexpected perspectives. Design that leaves a lasting impression.</textarea></label>
+<label class="field" for="services">Services or highlights (one per line)<textarea id="services" name="services" maxlength="900" rows="4">Art direction
+Spaces &amp; experiences
+Creative partnerships</textarea></label>
+<label class="field" for="email">Email contact (optional)<input id="email" name="email" type="email" maxlength="180" autocomplete="email" value="hello@example.com" placeholder="hello@example.com"></label>
+</div></details>
+<details id="visual-stage" name="forge-stage"><summary><span>03</span> Fine-tune the design</summary><div class="stage-body">
+<label class="field" for="palette">Visual palette<select id="palette" name="palette"><option value="ocean">Ocean</option><option value="violet">Violet</option><option value="ember">Ember</option><option value="forest">Forest</option><option value="dawn">Dawn</option><option value="graphite">Graphite</option><option value="amber">Amber</option><option value="frost">Frost</option></select></label>
+<label class="field" for="layout">Visual world<select id="layout" name="layout"><option value="waves">Glass Tide · sculpted glass</option><option value="particles">Playful Forms · rounded objects</option><option value="aurora">Colour Current · expressive layers</option><option value="grid">Quiet Structure · architectural planes</option></select></label>
+<label class="field" for="accent">Brand accent<input id="accent" name="accent" type="color" value="#34d2cf"></label>
+<label class="field" for="layoutStyle">Layout style<select id="layoutStyle" name="layoutStyle"><option value="centred">Centred and calm</option><option value="editorial">Left-aligned editorial</option></select></label>
+<label class="field" for="motion">Motion preference<select id="motion" name="motion"><option value="standard">Standard</option><option value="calm">Calm</option></select></label>
+<label class="field" for="speed">Motion speed<input id="speed" name="speed" type="range" min="0.25" max="1.6" step="0.01" value="0.82"></label>
+</div></details>
+<div class="export-stage"><p class="eyebrow">04 / Export your page</p><p class="fine">One HTML file. Your design and content, ready to edit or host.</p>
+<div class="actions"><button type="submit" class="button primary">Update preview</button><button id="download" type="button" class="button ghost">Download HTML ↓</button></div>
+</div>
+<p id="status" class="fine" role="status" aria-live="polite">Preview refreshed. Your content and visual words stay on this device.</p>
+</form></section>
+<section class="panel result-panel" aria-labelledby="preview-title"><div class="result-heading"><h2 id="preview-title">Your page</h2><span id="world-name" class="world-badge">Glass Tide</span></div><iframe id="site-preview" title="Preview of your generated website" sandbox="" class="preview-frame"></iframe><p class="fine">A real page, not a picture. Scroll inside to explore. Your download uses exactly the same design and content. Hosting and a live contact form are separate.</p></section>
+</div></div></section>
+</main>
+<footer><div class="container"><div class="foot"><span>&copy; 2026 Fenton Creative Ltd. Early-access preview.</span><span>Browser-only. No remote AI. No payments. No external requests.</span></div></div></footer>
+</body></html>

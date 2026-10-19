@@ -1,0 +1,58 @@
+[
+  {
+    "world": "glass-tide",
+    "headings": 1,
+    "scrollWidth": 390,
+    "services": 3,
+    "width": 390
+  },
+  {
+    "world": "colour-current",
+    "headings": 1,
+    "scrollWidth": 390,
+    "services": 3,
+    "width": 390
+  },
+  {
+    "world": "playful-forms",
+    "headings": 1,
+    "scrollWidth": 390,
+    "services": 3,
+    "width": 390
+  },
+  {
+    "world": "quiet-structure",
+    "headings": 1,
+    "scrollWidth": 390,
+    "services": 3,
+    "width": 390
+  },
+  {
+    "world": "glass-tide",
+    "headings": 1,
+    "scrollWidth": 320,
+    "services": 3,
+    "width": 320
+  },
+  {
+    "world": "colour-current",
+    "headings": 1,
+    "scrollWidth": 320,
+    "services": 3,
+    "width": 320
+  },
+  {
+    "world": "playful-forms",
+    "headings": 1,
+    "scrollWidth": 320,
+    "services": 3,
+    "width": 320
+  },
+  {
+    "world": "quiet-structure",
+    "headings": 1,
+    "scrollWidth": 320,
+    "services": 3,
+    "width": 320
+  }
+]
