@@ -46,3 +46,5 @@ The automated tests cover:
 Manual checks still required before controlled release: Safari, iPhone, keyboard traversal, screen reader, contrast and real network/device conditions.
 
 Current evidence: `release-ledger-2026-10-19.md`. Serve the repository with `python3 -m http.server 8765 --bind 127.0.0.1`, then open `http://127.0.0.1:8765/launch/`. Screenshots and the browser-downloaded example are in `artifacts/forge-review/`, outside the deployment payload. The example uses safe local content, without an AI provider.
+
+The first-use iteration is recorded in `artifacts/first-use-review/`: actual downloaded pages for Glass Tide, Colour Current, Playful Forms and Quiet Structure, comparison screenshots and browser measurements. The first screen renders its example using the same HTML exporter as the editor. Example words select designed compositions; unsupported words produce repeatable variations without a claim of semantic AI interpretation. Transform applies word edits explicitly; content and design controls continue to update the preview live.

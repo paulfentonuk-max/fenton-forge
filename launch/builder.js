@@ -47,8 +47,17 @@ const WORD_PRESETS = {
   creative: { palette: 'dawn', layout: 'aurora', speed: 1.12 },
   bold: { palette: 'dawn', layout: 'aurora', speed: 1.18 },
   friendly: { palette: 'amber', layout: 'particles', speed: 0.92 },
-  professional: { palette: 'graphite', layout: 'waves', speed: 1.00 }
+  professional: { palette: 'graphite', layout: 'grid', speed: 1.00 },
+  precise: { palette: 'graphite', layout: 'grid', speed: 0.70 },
+  structured: { palette: 'graphite', layout: 'grid', speed: 0.70 },
+  playful: { palette: 'amber', layout: 'particles', speed: 1.10 },
+  joyful: { palette: 'dawn', layout: 'particles', speed: 1.10 },
+  crazy: { palette: 'dawn', layout: 'aurora', speed: 1.25 },
+  cool: { palette: 'violet', layout: 'aurora', speed: 1.10 },
+  fun: { palette: 'dawn', layout: 'aurora', speed: 1.20 }
 };
+
+const WORLD_LABELS = { waves: 'Glass Tide', particles: 'Playful Forms', aurora: 'Colour Current', grid: 'Quiet Structure' };
 
 function pick(list, hash) {
   return list[Math.floor(hash * list.length) % list.length];
@@ -57,14 +66,21 @@ function pick(list, hash) {
 function stateFromWords(words) {
   const values = (Array.isArray(words) ? words : [words]).filter(Boolean).slice(0, 3)
     .map(value => String(value).trim().slice(0, 40)).filter(Boolean);
-  const preset = values.reduce((merged, word) => Object.assign({}, merged, WORD_PRESETS[word.toLocaleLowerCase('en-GB')] || {}), {});
+  const matches = values.map(word => {
+    const key = word.toLocaleLowerCase('en-GB');
+    return Object.hasOwn(WORD_PRESETS, key) ? WORD_PRESETS[key] : null;
+  }).filter(Boolean);
   const defaults = ['still', 'balanced', 'modern'];
   const hashes = [0, 1, 2].map(index => hashValue(values[index] || defaults[index]));
-  const palette = preset.palette || pick(Object.keys(PALETTES), hashes[0]);
-  const layout = preset.layout || pick(LAYOUTS, hashes[1]);
-  const speed = Number((preset.speed || ((0.68 + hashes[2] * 0.72))).toFixed(2));
+  const strongest = key => matches.reduce((best, candidate) => {
+    const count = value => matches.filter(match => match[key] === value).length;
+    return !best || count(candidate[key]) > count(best[key]) ? candidate : best;
+  }, null)?.[key];
+  const palette = strongest('palette') || pick(Object.keys(PALETTES), hashes[0]);
+  const layout = strongest('layout') || pick(LAYOUTS, hashes[1]);
+  const speed = Number((matches.length ? matches.reduce((total, match) => total + match.speed, 0) / matches.length : 0.68 + hashes[2] * 0.72).toFixed(2));
   const seed = Math.round(hashValue(values.join(' ')) * 900000 + 100000);
-  return { words: values, palette, layout, speed, seed };
+  return { words: values, palette, layout, layoutStyle: layout === 'grid' || layout === 'waves' ? 'editorial' : 'centred', speed, seed };
 }
 
 function validatedState(input = {}) {
@@ -73,13 +89,13 @@ function validatedState(input = {}) {
   const email = trimmed('email', 180);
   const accent = trimmed('accent', 7);
   const source = stateFromWords(words);
-  const palette = PALETTES[input.palette] ? input.palette : source.palette;
+  const palette = Object.hasOwn(PALETTES, input.palette) ? input.palette : source.palette;
   const layout = LAYOUTS.includes(input.layout) ? input.layout : source.layout;
   const parsedSpeed = Number(input.speed);
   const speed = Number.isFinite(parsedSpeed) && parsedSpeed >= 0.25 && parsedSpeed <= 1.60 ? Math.round(parsedSpeed * 100) / 100 : source.speed;
   const parsedSeed = Number(input.seed);
   const seed = Number.isSafeInteger(parsedSeed) && parsedSeed > 0 && parsedSeed < 1000000 ? parsedSeed : source.seed;
-  const layoutStyle = LAYOUT_STYLES.includes(input.layoutStyle) ? input.layoutStyle : 'centred';
+  const layoutStyle = LAYOUT_STYLES.includes(input.layoutStyle) ? input.layoutStyle : source.layoutStyle;
   const motion = MOTIONS.includes(input.motion) ? input.motion : 'standard';
 
   return {
@@ -102,30 +118,50 @@ function validatedState(input = {}) {
 function sceneStyles(state) {
   const palette = PALETTES[state.palette] || PALETTES.ocean;
   const durations = { waves: ['17.5s', '23.8s'], particles: ['12.8s', '29.2s'], aurora: ['19.6s', '31.1s'], grid: ['24.1s', '18.9s'] };
-  const values = state.layout === 'grid'
-    ? 'repeating-linear-gradient(90deg, rgba(255,255,255,.045) 0 1px, transparent 1px 58px), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 42px)'
-    : 'conic-gradient(from 210deg at 18% 20%, ' + palette.accent + '22, transparent 40%), radial-gradient(circle at 78% 20%, ' + palette.accent + '33, transparent 45%)';
-  return `.scene{position:relative;overflow:hidden;background:${palette.bg};color:${palette.fg}}
-.scene:before{content:'';position:absolute;inset:-35%;background:${values};opacity:.42;transform:rotate(8deg)}
-.scene:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,${palette.bg}f2,transparent 62%)}
-.motion-layer{position:absolute;inset:-34%;background:${values};opacity:.38;filter:blur(28px);animation:forgeMotion ${parseFloat(durations[state.layout][0]) / state.speed}s ease-in-out infinite alternate}
-.motion-layer.secondary{animation-duration:${parseFloat(durations[state.layout][1]) / state.speed}s;transform:scale(1.2) rotate(-11deg)}
-.copy{position:relative;z-index:2}
-.motes{position:absolute;inset:0;z-index:1;pointer-events:none}
-.motes span{position:absolute;border-radius:999px;background:${palette.muted};opacity:.16;animation:rise ${6 + state.seed % 5}s linear infinite}
-.motes span:nth-child(1){left:8%;top:28%;width:5px;height:5px}
-.motes span:nth-child(2){left:26%;top:58%;width:7px;height:7px;animation-delay:1.2s}
-.motes span:nth-child(3){left:63%;top:31%;width:4px;height:4px;animation-delay:.5s}
-.motes span:nth-child(4){left:81%;top:68%;width:6px;height:6px;animation-delay:2.1s}
-.motes span:nth-child(5){left:43%;top:76%;width:3px;height:3px;animation-delay:.9s}
-.copy h1:after{content:'';display:${state.layoutStyle === 'centred' ? 'block' : 'none'};width:88px;height:5px;background:var(--accent);border-radius:10px;margin:16px auto}
-.scene{background:radial-gradient(ellipse at 82% 20%,${palette.accent}33,transparent 60%),${palette.bg}}
-.copy{padding:32px;border:1px solid ${palette.accent}66;border-radius:22px;background:linear-gradient(120deg,${palette.bg}ee,${palette.bg}88);box-shadow:0 24px 70px #0005;backdrop-filter:blur(12px)}
-.copy p{margin-left:${state.layoutStyle === 'centred' ? 'auto' : '0'};margin-right:auto}
+  return `.scene{position:relative;overflow:hidden;background:radial-gradient(ellipse at 85% 38%,${palette.accent}28,transparent 65%),${palette.bg};color:${palette.fg};padding:50px 0 64px;min-height:0}
+.scene-content{position:relative;display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:24px;min-height:430px}
+.copy{position:relative;z-index:2;width:100%;margin:0;text-align:${state.layoutStyle === 'centred' ? 'center' : 'left'}}
+.copy h1{font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:clamp(2.8rem,6.3vw,5.4rem);line-height:1.02;letter-spacing:-.055em;overflow-wrap:anywhere}
+.copy p{margin-left:${state.layoutStyle === 'centred' ? 'auto' : '0'};margin-right:auto;max-width:34em}
+.copy .eyebrow{font-size:.65rem;letter-spacing:.18em}
+.scene .button{background:var(--fg);color:var(--bg);border:1px solid var(--accent);border-radius:6px;font-size:.85rem}
+.glass-sculpture{position:relative;height:410px;perspective:900px;isolation:isolate}
+.glass-sculpture:after{content:'';position:absolute;inset:auto 0 5%;height:18%;background:radial-gradient(ellipse,${palette.accent}35,transparent 65%);transform:scaleY(.4);filter:blur(15px)}
+.glass-sculpture span{position:absolute;display:block;inset:9% 8% 10%;border:1px solid ${palette.accent}99;border-radius:48% 48% 42% 42%;background:linear-gradient(128deg,${palette.fg}38,${palette.accent}12 34%,${palette.bg}88 60%,${palette.accent}66);box-shadow:inset 3px 2px 4px ${palette.fg}55,inset -14px -10px 32px ${palette.bg}aa,12px 22px 38px #0006;backdrop-filter:blur(5px);transform:rotate(-22deg) rotateY(-28deg);animation:glassFloat ${parseFloat(durations[state.layout][1]) / state.speed}s ease-in-out infinite alternate}
+.glass-sculpture span:nth-child(2){inset:18% 18% 4% 0;transform:rotate(-32deg) rotateY(25deg);animation-delay:-8s;opacity:.8}
+.glass-sculpture span:nth-child(3){inset:2% 0 24% 22%;transform:rotate(18deg) rotateY(-18deg);animation-delay:-16s;opacity:.75}
+.glass-sculpture .sculpture-label{position:absolute;bottom:0;left:8%;font-size:.6rem;letter-spacing:.2em;color:var(--muted);font-family:system-ui,sans-serif;font-weight:500}
+.motion-layer{position:absolute;inset:15% -10%;background:linear-gradient(150deg,transparent 35%,${palette.accent}20 50%,transparent 65%);animation:forgeMotion ${parseFloat(durations[state.layout][0]) / state.speed}s ease-in-out infinite alternate;pointer-events:none}
+.motion-layer.secondary{animation-duration:${parseFloat(durations[state.layout][1]) / state.speed}s;opacity:.5;transform:rotate(90deg)}
+.scene[data-layout=aurora] .scene-content{grid-template-columns:1fr;min-height:500px}
+.scene[data-layout=aurora] .copy{max-width:850px;margin:auto;padding:38px 24px;background:${palette.bg}cc;border:1px solid ${palette.fg}44;border-radius:4px;backdrop-filter:blur(20px)}
+.scene[data-layout=aurora] .copy h1{font-family:system-ui,sans-serif;font-weight:850;letter-spacing:-.075em;font-size:clamp(3rem,8vw,6.8rem);line-height:.96}
+.scene[data-layout=aurora] .glass-sculpture{position:absolute;inset:0;height:100%;z-index:0}
+.scene[data-layout=aurora] .glass-sculpture span{inset:-5% 12%;border-radius:10%;background:linear-gradient(135deg,#ffb65acc,#b148c566 40%,#e64cadbb);transform:rotate(-16deg) rotateY(25deg)}
+.scene[data-layout=aurora] .glass-sculpture span:nth-child(2){inset:15% -4% 0 55%;transform:rotate(30deg);background:linear-gradient(40deg,#f9b461cc,#b94fff88)}
+.scene[data-layout=aurora] .glass-sculpture span:nth-child(3){inset:10% 60% -10% -5%;transform:rotate(-30deg);background:linear-gradient(90deg,#9c58ffbb,#d649bd88)}
+.scene[data-layout=particles] .copy h1{font-family:system-ui,sans-serif;font-weight:800;letter-spacing:-.055em;font-size:clamp(2.8rem,6vw,5rem)}
+.scene[data-layout=particles] .glass-sculpture span{inset:9% 10% 15%;border-radius:50%;background:radial-gradient(circle at 30% 22%,${palette.fg}cc,${palette.accent}66 30%,${palette.bg}dd 70%);transform:rotate(-14deg)}
+.scene[data-layout=particles] .glass-sculpture span:nth-child(2){inset:42% 38% 0 -2%;transform:rotate(20deg)}
+.scene[data-layout=particles] .glass-sculpture span:nth-child(3){inset:0 0 57% 58%}
+.scene[data-layout=grid]{background:linear-gradient(90deg,${palette.fg}0c 1px,transparent 1px),linear-gradient(${palette.fg}0c 1px,transparent 1px),${palette.bg};background-size:56px 56px}
+.scene[data-layout=grid] .copy{border-left:2px solid var(--accent);padding-left:24px}
+.scene[data-layout=grid] .copy h1{font-family:system-ui,sans-serif;font-size:clamp(2.7rem,6vw,5rem);font-weight:350;letter-spacing:-.065em}
+.scene[data-layout=grid] .eyebrow{font-family:monospace}
+.scene[data-layout=grid] .glass-sculpture span{inset:13% 15%;border-radius:2px;transform:rotate(-12deg) rotateY(-25deg);background:linear-gradient(130deg,${palette.fg}22,${palette.bg}99);animation-name:structureFloat}
+.scene[data-layout=grid] .glass-sculpture span:nth-child(2){inset:21% 5% 5% 28%;transform:rotate(8deg) rotateY(-25deg)}
+.scene[data-layout=grid] .glass-sculpture span:nth-child(3){inset:0 29% 31% 0;transform:rotate(-25deg) rotateY(-25deg)}
+.services-area{padding:36px 0 50px;border-top:1px solid ${palette.fg}22}
+.services-area h2{font-size:1.7rem;font-weight:500;letter-spacing:-.035em}
+.services-area li{border-top:1px solid ${palette.accent}88;border-radius:3px;font-size:.9rem}
+@keyframes glassFloat{from{translate:0 0;rotate:-3deg}to{translate:0 -18px;rotate:5deg}}
+@keyframes structureFloat{from{translate:0 0}to{translate:8px -8px}}
+@keyframes forgeMotion{from{transform:translateX(-8%) rotate(-8deg)}to{transform:translateX(8%) rotate(8deg)}}
+@media(max-width:620px){.scene{padding:28px 0 36px}.scene-content{grid-template-columns:1fr;gap:0;min-height:0}.copy{max-width:none}.copy h1{font-size:clamp(2.8rem,10vw,4.2rem)}.glass-sculpture{height:230px;max-width:360px;width:100%;margin:auto}.scene[data-layout=aurora] .scene-content{min-height:460px}.scene[data-layout=aurora] .copy{padding:32px 18px}.scene[data-layout=aurora] .copy h1{font-size:clamp(3rem,11vw,4.4rem)}}
+@media(min-width:480px) and (max-width:620px){.scene-content{grid-template-columns:1.2fr .8fr;gap:10px;min-height:350px}.copy h1{font-size:2.5rem}.glass-sculpture{height:320px}.scene[data-layout=aurora] .scene-content{grid-template-columns:1fr}.scene[data-layout=aurora] .glass-sculpture{height:100%;max-width:none}}
+@media(prefers-reduced-motion:reduce){.scene .glass-sculpture span,.scene .motion-layer{animation:none!important;translate:none!important;rotate:none!important}}
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
-${state.motion === 'calm' ? '.motion-layer,.motes span{animation:none!important}' : ''}
-@keyframes forgeMotion{from{transform:rotate(3deg) scale(1)}to{transform:rotate(14deg) scale(1.2)}}
-@keyframes rise{from{transform:translateY(0)}to{transform:translateY(-360px)}}`;
+${state.motion === 'calm' ? '.motion-layer,.glass-sculpture span{animation:none!important}' : ''}`;
 }
 
 function dataAttributes(site) {
@@ -147,7 +183,7 @@ function buildHTML(input) {
   const about = escapeHTML(site.about).replace(/\r?\n/g, '<br>');
   const services = site.services.map(line => '<li>' + escapeHTML(line) + '</li>').join('');
   const contact = site.email ? `<a class="button" href="mailto:${encodeURIComponent(site.email)}">Email ${name}</a>`
-    : '<p>Contact details available on request.</p>';
+    : '';
   const words = site.words.map(word => escapeHTML(word)).join(', ');
   const motionSeconds = Math.round(100 / site.speed) / 100;
   const visualNote = site.motion === 'calm'
@@ -175,30 +211,30 @@ function buildHTML(input) {
     '@media(prefers-reduced-motion:reduce){.motion-layer,.motes span{animation:none!important;transform:none!important}}',
     sceneStyles(site),
     '</style></head><body><header class="wrap brand">' + name + '</header>',
-    '<main><div class="scene"' + dataAttributes(site) + '><div class="motion-layer" aria-hidden="true"></div><div class="motion-layer secondary" aria-hidden="true"></div><div class="motes" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>',
-    '<div class="wrap"><div class="copy"><p class="eyebrow">WELCOME TO ' + upperName + '</p><h1>' + headline + '</h1><p>' + about + '</p>' + contact + '</div></div></div>',
+    '<main><div class="scene" ' + dataAttributes(site) + '><div class="motion-layer" aria-hidden="true"></div><div class="motion-layer secondary" aria-hidden="true"></div>',
+    '<div class="wrap scene-content"><div class="copy"><p class="eyebrow">' + upperName + ' / ' + WORLD_LABELS[site.layout] + '</p><h1>' + headline + '</h1><p>' + about + '</p>' + contact + '</div><div class="glass-sculpture" aria-hidden="true"><span></span><span></span><span></span><b class="sculpture-label">' + WORLD_LABELS[site.layout].toUpperCase() + ' / 01</b></div></div></div>',
     '<section class="wrap services-area"><p class="eyebrow">WHAT WE OFFER</p><h2>What we can do for you</h2><ul>' + services + '</ul></section>',
     '</main><footer><div class="wrap">&copy; ' + new Date().getFullYear() + ' ' + name + ' · Made with Fenton Forge · Visual words: ' + words + '</div></footer>',
     '<p class="visually-hidden">' + visualNote + '</p>'].join('');
 }
 
 const DEFAULT_SERVICE_STATE = {
-  name: 'Haven Studio',
-  headline: 'A world made by you',
-  about: 'We turn a clear idea into a warm, useful website. This page is an editable starting point you own.',
-  services: 'Creative thinking\nBeautiful results\nPersonal service',
+  name: 'Tidal Studio',
+  headline: 'Room for the extraordinary.',
+  about: 'Thoughtful spaces. Unexpected perspectives. Design that leaves a lasting impression.',
+  services: 'Art direction\nSpaces & experiences\nCreative partnerships',
   email: 'hello@example.com',
-  accent: '#34d2cf',
-  palette: 'ocean',
+  accent: '#9fd8ff',
+  palette: 'frost',
   layout: 'waves',
   motion: 'standard',
-  layoutStyle: 'centred',
-  speed: 0.82,
-  seed: 231897,
-  words: ['calm', 'friendly', 'modern']
+  layoutStyle: 'editorial',
+  speed: 0.73,
+  seed: 229498,
+  words: ['ocean', 'calm', 'water']
 };
 
-if (typeof module !== 'undefined') module.exports = { DEFAULT_SERVICE_STATE, escapeHTML, validatedState, stateFromWords, buildHTML, sceneStyles, dataAttributes, PALETTES, LAYOUTS, LAYOUT_STYLES, MOTIONS };
+if (typeof module !== 'undefined') module.exports = { DEFAULT_SERVICE_STATE, escapeHTML, validatedState, stateFromWords, buildHTML, sceneStyles, dataAttributes, PALETTES, LAYOUTS, LAYOUT_STYLES, MOTIONS, WORLD_LABELS };
 
 if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
@@ -207,6 +243,9 @@ if (typeof document !== 'undefined') {
     const status = document.getElementById('status');
     const download = document.getElementById('download');
     if (!form || !frame || !status || !download) return;
+
+    const readWords = () => [form.elements.word1.value, form.elements.word2.value, form.elements.word3.value];
+    let appliedWords = readWords();
 
     const read = () => ({
       name: form.elements.name?.value ?? '',
@@ -220,7 +259,7 @@ if (typeof document !== 'undefined') {
       layoutStyle: form.elements.layoutStyle?.value ?? '',
       motion: form.elements.motion?.value ?? '',
       speed: form.elements.speed?.value ?? '',
-      words: [form.elements.word1?.value, form.elements.word2?.value, form.elements.word3?.value]
+      words: appliedWords
     });
 
     function preview() {
@@ -239,6 +278,8 @@ if (typeof document !== 'undefined') {
       frame.dataset.motion = site.motion;
       frame.dataset.speed = site.speed;
       frame.dataset.seed = site.seed;
+      const worldName = document.getElementById('world-name');
+      if (worldName) worldName.textContent = WORLD_LABELS[site.layout];
       status.textContent = 'Preview refreshed. Your content and visual words stay on this device.';
       return frame.srcdoc;
     }
@@ -249,6 +290,12 @@ if (typeof document !== 'undefined') {
     });
 
     download.addEventListener('click', () => {
+      if (readWords().join('\n') !== appliedWords.join('\n')) {
+        status.textContent = 'Your words have changed. Transform the visual before downloading.';
+        document.getElementById('imagine-stage').open = true;
+        document.getElementById('transform').focus();
+        return;
+      }
       if (!form.reportValidity()) return;
       const html = buildHTML(read());
       const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
@@ -263,17 +310,32 @@ if (typeof document !== 'undefined') {
       status.textContent = 'HTML downloaded. It is an independent file you can edit or host anywhere.';
     });
 
-    document.getElementById('transform')?.addEventListener('click', event => {
-      event.preventDefault();
-      if (![form.elements.word1, form.elements.word2, form.elements.word3].every(field => field.reportValidity() && field.value.trim())) return;
-      const transformed = stateFromWords(read().words);
+    function applyWords(words) {
+      const transformed = stateFromWords(words);
+      appliedWords = words.slice();
       form.elements.palette.value = transformed.palette;
       form.elements.layout.value = transformed.layout;
+      form.elements.layoutStyle.value = transformed.layoutStyle;
       form.elements.speed.value = transformed.speed;
       form.elements.accent.value = PALETTES[transformed.palette].accent;
       preview();
-      status.textContent = 'Transformed. Please customise the visual and website details.';
+      const known = transformed.words.filter(word => Object.hasOwn(WORD_PRESETS, word.toLocaleLowerCase('en-GB')));
+      status.textContent = WORLD_LABELS[transformed.layout] + ' applied. ' + (known.length ? 'Your recognised words guide this design. ' : 'These words create a repeatable variation, rather than a meaning-based interpretation. ') + 'Add your story next.';
+    }
+
+    document.getElementById('transform')?.addEventListener('click', event => {
+      event.preventDefault();
+      if (![form.elements.word1, form.elements.word2, form.elements.word3].every(field => field.reportValidity() && field.value.trim())) return;
+      applyWords(readWords());
+      document.getElementById('imagine-stage').open = false;
+      document.getElementById('customise-stage').open = true;
+      form.elements.name.focus({ preventScroll: true });
     });
+
+    form.addEventListener('invalid', event => {
+      const section = event.target.closest('details');
+      if (section) section.open = true;
+    }, true);
 
     ['name', 'headline', 'about', 'services', 'email', 'palette', 'layout', 'accent', 'layoutStyle', 'motion', 'speed'].forEach(name => {
       const field = form.elements[name];
@@ -282,16 +344,16 @@ if (typeof document !== 'undefined') {
 
     const wordFields = [form.elements.word1, form.elements.word2, form.elements.word3];
     wordFields.filter(Boolean).forEach(field => field.addEventListener('input', () => {
-      const all = wordFields.filter(Boolean).map(item => item.value.trim());
-      if (all.every(Boolean)) {
-        const transformed = stateFromWords(all);
-        form.elements.palette.value = transformed.palette;
-        form.elements.layout.value = transformed.layout;
-        form.elements.speed.value = transformed.speed;
-        form.elements.accent.value = PALETTES[transformed.palette].accent;
-        preview();
-      }
+      status.textContent = 'Words ready? Press Transform the visual to apply them.';
     }));
+
+    document.querySelectorAll('[data-words]').forEach(button => {
+      button.addEventListener('click', () => {
+        const words = button.dataset.words.split(',');
+        wordFields.forEach((field, index) => { field.value = words[index]; });
+        applyWords(words);
+      });
+    });
 
     const starterWords = {
       agency: ['bold', 'creative', 'modern'],
@@ -308,18 +370,29 @@ if (typeof document !== 'undefined') {
         form.elements.word1.value = words[0];
         form.elements.word2.value = words[1];
         form.elements.word3.value = words[2];
-        const transformed = stateFromWords(words);
-        form.elements.palette.value = transformed.palette;
-        form.elements.layout.value = transformed.layout;
-        form.elements.speed.value = transformed.speed;
-        form.elements.accent.value = PALETTES[transformed.palette].accent;
-        preview();
+        applyWords(words);
+        document.getElementById('imagine-stage').open = true;
         status.textContent = 'Starting idea selected.';
         document.getElementById('builder')?.scrollIntoView({ block: 'start' });
         form.elements.word1.focus({ preventScroll: true });
       });
     });
 
-    preview();
+    const examples = {
+      tide: { words: ['ocean', 'calm', 'water'], description: 'Glass Tide: sculpted glass, spacious serif type, a slow tidal drift.' },
+      current: { words: ['crazy', 'cool', 'fun'], description: 'Colour Current: oversized bold type and overlapping coloured glass. Same content, a different composition.' },
+      structure: { words: ['precise', 'structured', 'professional'], description: 'Quiet Structure: light architectural type, a measured grid and layered glass planes.' }
+    };
+    function showExample(key) {
+      const example = examples[key];
+      const exampleFrame = document.getElementById('example-preview');
+      if (!example || !exampleFrame) return;
+      exampleFrame.srcdoc = buildHTML({ ...DEFAULT_SERVICE_STATE, ...stateFromWords(example.words), name: 'Tidal Studio', headline: 'Room for the extraordinary.', about: 'Thoughtful spaces. Unexpected perspectives. Design that leaves a lasting impression.', services: 'Art direction\nSpaces & experiences\nCreative partnerships', email: '' , accent: undefined });
+      document.getElementById('example-description').textContent = example.description;
+      document.querySelectorAll('[data-example]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.example === key)));
+    }
+    document.querySelectorAll('[data-example]').forEach(button => button.addEventListener('click', () => showExample(button.dataset.example)));
+    applyWords(readWords());
+    showExample('tide');
   });
 }

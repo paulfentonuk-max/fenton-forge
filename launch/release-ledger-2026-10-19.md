@@ -39,6 +39,21 @@
 
 ## Release decision and rollback
 
-Ready for founder local visual review; not approved for release. Preview: http://127.0.0.1:8765/launch/ . Independent artifact: http://127.0.0.1:8765/artifacts/forge-review/fenton-forge-website.html .
+### Founder feedback iteration
+
+The founder accepted export fidelity and the Glass Tide direction, but did not accept the visual impact or first-use clarity. Acceptance remains open. This iteration continues the same branch after `005013801b648835f56314400df7242a5f12c0fc`.
+
+- Diagnosis: the old mapping for crazy / cool / fun returned ocean, aurora, speed 1.37 and seed 306365. It changed state but not the composition or typography. Waves, particles and aurora shared a gradient renderer; the last recognised word could override earlier ones. A screenshot alone did not establish a failed submit or mapping failure.
+- The first screen now states input, outcome and first action beside an actual renderer-produced sample. Three example sets can be compared without entering the editor. At the observed 1280×720 viewport, the primary action ends at y=592 and the example begins at y=163. At 390×844 the action ends at y=534 and the example begins at y=709.
+- Imagine, story and fine-tuning controls use keyboard-accessible native disclosure stages. Transform explicitly applies words and advances to the story. Editing words no longer silently transforms on each keystroke. Downloads are blocked if word changes have not been applied. Invalid fields reopen their containing stage; this was browser-tested with a required name in a closed stage.
+- Four supported compositions retain the glass material: curved tidal panes with serif type; rounded playful forms with heavy sans type; overlapping coloured glass with oversized bold type; architectural planes with light sans type and a measured grid. Recognised words vote for styles rather than the last one silently winning. Unsupported vocabulary is explained in the product.
+- 18 local tests pass. Actual browser measurements confirm layout, type family/weight and object-shape differences; see `artifacts/first-use-review/world-measurements.json`.
+- Repeated Discover → Imagine → Transform → Customise → Export in the actual in-app browser. The founder's crazy / cool / fun set selected Colour Current. Customised name, headline and services survived export. All four actual browser downloads were compared byte-for-byte with the editor's `srcdoc` and matched. Each was opened independently over localhost and visually inspected.
+- All four independent exports passed horizontal-fit checks at both 390px and 320px, with one main heading and three services. The editor page also fit at both widths. Viewport overrides reset afterwards.
+- Calm mode was checked against computed sculpture animation and returned `none`. System reduced-motion CSS now covers glass and light layers as well; system-level preference emulation remains unverified.
+- Current before/after screenshots, independent HTML downloads and measurements live in `artifacts/first-use-review/`. Prior `artifacts/forge-review/` and `artifacts/walkthrough/` evidence is retained. New CI status is reported on PR #9; a billing lock previously prevented both RC and CodeQL jobs from starting.
+- No paid services, production changes or broader redesign were introduced. Safari, physical devices, full accessibility, runtime network tracing, offline file launch and founder visual acceptance remain open.
+
+Ready for founder local visual review; not approved for release. Preview: http://127.0.0.1:8765/launch/ . Current independent artifact: http://127.0.0.1:8765/artifacts/first-use-review/glass-tide.html . Prior outputs remain preserved under `artifacts/forge-review/`.
 
 No merge, deployment, Hostinger change, paid call or Raffles modification performed. Main unchanged. To discard the candidate, close the local preview and retain branch/evidence; do not reset historical working directories. To undo a subsequently approved branch update, revert its continuation commit on the same review branch. A production rollback package requires identifying and backing up the actual deployed package during an authorised release.

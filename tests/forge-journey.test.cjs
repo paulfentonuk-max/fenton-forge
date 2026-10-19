@@ -55,6 +55,43 @@ test('different words produce a different visual result', () => {
   assert.notDeepStrictEqual(calm, bold);
 });
 
+test('supported words select distinct compositions rather than only different seeds', () => {
+  const sets = [
+    { words: ['ocean', 'calm', 'water'], layout: 'waves', style: 'editorial', palette: 'frost' },
+    { words: ['crazy', 'cool', 'fun'], layout: 'aurora', style: 'centred', palette: 'dawn' },
+    { words: ['friendly', 'playful', 'joyful'], layout: 'particles', style: 'centred', palette: 'amber' },
+    { words: ['precise', 'structured', 'professional'], layout: 'grid', style: 'editorial', palette: 'graphite' }
+  ];
+  for (const expected of sets) {
+    const mapped = forge.stateFromWords(expected.words);
+    assert.equal(mapped.layout, expected.layout);
+    assert.equal(mapped.layoutStyle, expected.style);
+    assert.equal(mapped.palette, expected.palette);
+    const exported = forge.buildHTML({ ...state, ...mapped });
+    assert.match(exported, new RegExp(`data-layout="${expected.layout}"`));
+    assert.ok(exported.includes(forge.WORLD_LABELS[expected.layout]));
+    assert.match(exported, /class="glass-sculpture" aria-hidden="true"/);
+  }
+  assert.equal(forge.stateFromWords(['bold', 'creative', 'future']).layout, 'aurora');
+});
+
+test('unknown words give stable variations without breaking export', () => {
+  const words = ['xyzzy', 'plugh', 'quux'];
+  assert.deepEqual(forge.stateFromWords(words), forge.stateFromWords(words));
+  assert.doesNotThrow(() => forge.buildHTML({ ...state, ...forge.stateFromWords(words) }));
+  assert.doesNotThrow(() => forge.buildHTML({ ...state, palette: '__proto__' }));
+  assert.ok(Number.isFinite(forge.stateFromWords(['__proto__', 'constructor', 'toString']).speed));
+});
+
+test('first use shows an actual output and keeps full controls in native stages', () => {
+  const html = read('index.html');
+  assert.match(html, /id="example-preview"[^>]*sandbox=""/);
+  assert.match(html, /Choose your three words/);
+  for (const stage of ['imagine', 'customise', 'visual']) assert.match(html, new RegExp(`<details id="${stage}-stage"`));
+  assert.match(html, /Forge does not interpret every word/);
+  assert.doesNotMatch(html, />Word [123]</);
+});
+
 test('export is independent and contains the configured site', () => {
   const html = forge.buildHTML(state);
   assert.match(html, /^<!doctype html>/i);
@@ -174,7 +211,7 @@ test('starter cards are semantic and selectable in the builder', () => {
 });
 
 test('no external assets in launch application', () => {
-  for (const file of ['index.html', 'styles.css']) {
+  for (const file of ['index.html', 'styles.css', 'living-portal.css', 'first-use.css']) {
     const text = read(file);
     assert.ok(!/src="https?:\/\//.test(text), file);
     assert.ok(!/href="https?:\/\//.test(text), file);
@@ -183,5 +220,5 @@ test('no external assets in launch application', () => {
 
 test('no secret-like strings in release payload', () => {
   const pattern = /(?:BEGIN (?:RSA )?PRIVATE KEY|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9]{24,}|ghp_[A-Za-z0-9]{36,})/g;
-  for (const file of ['index.html', 'builder.js', 'styles.css']) assert.ok(!pattern.test(read(file)), file);
+  for (const file of ['index.html', 'builder.js', 'styles.css', 'living-portal.css', 'first-use.css']) assert.ok(!pattern.test(read(file)), file);
 });

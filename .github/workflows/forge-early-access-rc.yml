@@ -30,4 +30,6 @@ jobs:
           test -s launch/index.html &&
           test -s launch/builder.js &&
           test -s launch/styles.css &&
+          test -s launch/living-portal.css &&
+          test -s launch/first-use.css &&
           test -s launch/README.md

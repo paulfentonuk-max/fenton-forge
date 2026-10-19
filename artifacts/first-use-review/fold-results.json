@@ -1,0 +1,14 @@
+{
+  "desktop": {
+    "actionBottom": 591.8515625,
+    "exampleTop": 163.1640625,
+    "height": 720
+  },
+  "mobile": {
+    "actionBottom": 533.71875,
+    "exampleTop": 708.9296875,
+    "height": 844,
+    "scrollWidth": 390,
+    "width": 390
+  }
+}
