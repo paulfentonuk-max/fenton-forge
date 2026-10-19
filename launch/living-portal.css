@@ -60,12 +60,23 @@
   --glass-tide-accent:#67dbf0;
   --glass-tide-gold:#ffd566;
   --glass-tide-panel:#0b1c24;
+  --glass-tide-glass:#04101c;
   --glass-tide-line:#223243;
   color:var(--glass-tide-fg);
 }
 .glass-tide .portal-card{min-height:520px;background:linear-gradient(120deg,var(--glass-tide-panel),var(--glass-tide-glass) 50%,var(--glass-tide-panel))}
 .glass-tide .portal-card::before{background:radial-gradient(circle at 25% 25%, rgba(103,219,240,.42), transparent 48%),radial-gradient(circle at 78% 28%, rgba(255,213,102,.38), transparent 46%)}
 .glass-tide .portal-card::after{background:linear-gradient(120deg, rgba(4,20,32,.78), rgba(4,20,32,.22) 50%, transparent)}
+.hero.glass-tide{padding:36px 0 70px}
+.hero .portal-card .portal-copy{padding:70px 64px}
+.hero .portal-card::after{inset:18px;pointer-events:none}
+.hero .portal-card .lead{max-width:650px}
+.topbar>.container{display:flex;align-items:center;justify-content:space-between;gap:24px;width:100%}
+.card[data-category]:hover{border-color:var(--cyan);background:#1a3043}
+.card[aria-pressed=true]{border-color:var(--cyan);box-shadow:inset 0 0 0 1px var(--cyan)}
+.builder-layout>.panel:last-child{align-self:start;position:sticky;top:20px}
+@media(max-width:900px){.topbar>.container{flex-wrap:wrap}.builder-layout>.panel:last-child{position:static}.hero .portal-card .portal-copy{padding:56px 36px}}
+@media(max-width:620px){.hero .portal-card .portal-copy{padding:42px 24px}.hero.glass-tide{padding:20px 0 40px}.hero h1{overflow-wrap:break-word}}
 @media(max-width:900px){
   .portal-card .portal-copy{padding:56px 36px}
 }

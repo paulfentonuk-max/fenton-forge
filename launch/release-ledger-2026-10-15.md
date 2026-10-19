@@ -1,5 +1,7 @@
 # Fenton Forge release ledger
 
+Historical ledger: current verification and release decision are in `release-ledger-2026-10-19.md`. Inherited claims below do not establish current acceptance.
+
 ## Scope
 
 - Target date: next controlled early-access after product-owner approval.

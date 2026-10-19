@@ -86,7 +86,7 @@ function validatedState(input = {}) {
     name: trimmed('name', 80) || 'Your Organisation',
     headline: trimmed('headline', 130) || 'Welcome to your website',
     about: trimmed('about', 700) || 'Tell visitors what makes your work valuable.',
-    services: String(input.services ?? '').split(/\r?\n/).map(line => line.trim().slice(0, 110)).filter(Boolean).slice(0, 8),
+    services: (Array.isArray(input.services) ? input.services : String(input.services ?? '').split(/\r?\n/)).map(line => String(line).trim().slice(0, 110)).filter(Boolean).slice(0, 8),
     email: /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email) ? email : '',
     accent: /^#[0-9a-fA-F]{6}$/.test(accent) ? accent : PALETTES[palette].accent,
     palette,
@@ -108,8 +108,8 @@ function sceneStyles(state) {
   return `.scene{position:relative;overflow:hidden;background:${palette.bg};color:${palette.fg}}
 .scene:before{content:'';position:absolute;inset:-35%;background:${values};opacity:.42;transform:rotate(8deg)}
 .scene:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,${palette.bg}f2,transparent 62%)}
-.motion-layer{position:absolute;inset:-34%;background:${values};opacity:.38;filter:blur(28px);animation:forgeMotion ${durations[state.layout][0]} var(--speed) ease-in-out infinite alternate}
-.motion-layer.secondary{animation-duration:${durations[state.layout][1]};transform:scale(1.2) rotate(-11deg)}
+.motion-layer{position:absolute;inset:-34%;background:${values};opacity:.38;filter:blur(28px);animation:forgeMotion ${parseFloat(durations[state.layout][0]) / state.speed}s ease-in-out infinite alternate}
+.motion-layer.secondary{animation-duration:${parseFloat(durations[state.layout][1]) / state.speed}s;transform:scale(1.2) rotate(-11deg)}
 .copy{position:relative;z-index:2}
 .motes{position:absolute;inset:0;z-index:1;pointer-events:none}
 .motes span{position:absolute;border-radius:999px;background:${palette.muted};opacity:.16;animation:rise ${6 + state.seed % 5}s linear infinite}
@@ -118,7 +118,12 @@ function sceneStyles(state) {
 .motes span:nth-child(3){left:63%;top:31%;width:4px;height:4px;animation-delay:.5s}
 .motes span:nth-child(4){left:81%;top:68%;width:6px;height:6px;animation-delay:2.1s}
 .motes span:nth-child(5){left:43%;top:76%;width:3px;height:3px;animation-delay:.9s}
-.copy h1:after{content:'';display:${state.layoutStyle === 'centred' ? 'block' : 'none'};width:88px;height:5px;background:var(--accent);border-radius:10px;margin:16px 0}
+.copy h1:after{content:'';display:${state.layoutStyle === 'centred' ? 'block' : 'none'};width:88px;height:5px;background:var(--accent);border-radius:10px;margin:16px auto}
+.scene{background:radial-gradient(ellipse at 82% 20%,${palette.accent}33,transparent 60%),${palette.bg}}
+.copy{padding:32px;border:1px solid ${palette.accent}66;border-radius:22px;background:linear-gradient(120deg,${palette.bg}ee,${palette.bg}88);box-shadow:0 24px 70px #0005;backdrop-filter:blur(12px)}
+.copy p{margin-left:${state.layoutStyle === 'centred' ? 'auto' : '0'};margin-right:auto}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+${state.motion === 'calm' ? '.motion-layer,.motes span{animation:none!important}' : ''}
 @keyframes forgeMotion{from{transform:rotate(3deg) scale(1)}to{transform:rotate(14deg) scale(1.2)}}
 @keyframes rise{from{transform:translateY(0)}to{transform:translateY(-360px)}}`;
 }
@@ -166,12 +171,12 @@ function buildHTML(input) {
     '.services-area{padding:64px 0 80px}.services-area ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;list-style:none;padding:0}',
     '.services-area li{background:var(--surface);border-top:3px solid var(--accent);padding:22px;border-radius:12px}',
     'footer{border-top:1px solid #ffffff26;padding:26px 0;color:var(--muted)}',
-    '@media(max-width:620px){.copy{text-align:' + (site.layoutStyle === 'centred' ? 'text-align:center' : 'text-align:left') + '}}',
+    '@media(max-width:620px){.copy{padding:24px;text-align:' + (site.layoutStyle === 'centred' ? 'center' : 'left') + '}}',
     '@media(prefers-reduced-motion:reduce){.motion-layer,.motes span{animation:none!important;transform:none!important}}',
     sceneStyles(site),
     '</style></head><body><header class="wrap brand">' + name + '</header>',
     '<main><div class="scene"' + dataAttributes(site) + '><div class="motion-layer" aria-hidden="true"></div><div class="motion-layer secondary" aria-hidden="true"></div><div class="motes" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>',
-    '<div class="wrap"><div class="copy"><p class="eyebrow">WELCOME TO ' + upperName + '</p><h1>' + headline + '</h1><p>' + about + '</p>' + contact + '</div></div></div></main>',
+    '<div class="wrap"><div class="copy"><p class="eyebrow">WELCOME TO ' + upperName + '</p><h1>' + headline + '</h1><p>' + about + '</p>' + contact + '</div></div></div>',
     '<section class="wrap services-area"><p class="eyebrow">WHAT WE OFFER</p><h2>What we can do for you</h2><ul>' + services + '</ul></section>',
     '</main><footer><div class="wrap">&copy; ' + new Date().getFullYear() + ' ' + name + ' · Made with Fenton Forge · Visual words: ' + words + '</div></footer>',
     '<p class="visually-hidden">' + visualNote + '</p>'].join('');
@@ -260,6 +265,7 @@ if (typeof document !== 'undefined') {
 
     document.getElementById('transform')?.addEventListener('click', event => {
       event.preventDefault();
+      if (![form.elements.word1, form.elements.word2, form.elements.word3].every(field => field.reportValidity() && field.value.trim())) return;
       const transformed = stateFromWords(read().words);
       form.elements.palette.value = transformed.palette;
       form.elements.layout.value = transformed.layout;
@@ -294,9 +300,11 @@ if (typeof document !== 'undefined') {
     };
 
     document.querySelectorAll('.card[data-category]').forEach(card => {
+      card.setAttribute('aria-pressed', 'false');
       card.addEventListener('click', () => {
         const words = starterWords[card.dataset.category];
         if (!words) return;
+        document.querySelectorAll('.card[data-category]').forEach(starter => starter.setAttribute('aria-pressed', String(starter === card)));
         form.elements.word1.value = words[0];
         form.elements.word2.value = words[1];
         form.elements.word3.value = words[2];
@@ -307,6 +315,8 @@ if (typeof document !== 'undefined') {
         form.elements.accent.value = PALETTES[transformed.palette].accent;
         preview();
         status.textContent = 'Starting idea selected.';
+        document.getElementById('builder')?.scrollIntoView({ block: 'start' });
+        form.elements.word1.focus({ preventScroll: true });
       });
     });
 

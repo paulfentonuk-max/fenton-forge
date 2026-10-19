@@ -44,3 +44,5 @@ The automated tests cover:
 - reduced-motion and mobile affordances.
 
 Manual checks still required before controlled release: Safari, iPhone, keyboard traversal, screen reader, contrast and real network/device conditions.
+
+Current evidence: `release-ledger-2026-10-19.md`. Serve the repository with `python3 -m http.server 8765 --bind 127.0.0.1`, then open `http://127.0.0.1:8765/launch/`. Screenshots and the browser-downloaded example are in `artifacts/forge-review/`, outside the deployment payload. The example uses safe local content, without an AI provider.

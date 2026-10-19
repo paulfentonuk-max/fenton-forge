@@ -90,6 +90,32 @@ test('export escapes unsafe text and rejects unsafe email', () => {
   assert.ok(!html.includes('<script '));
 });
 
+test('preview and direct export preserve separate service items', () => {
+  const raw = { ...state, services: 'Design\nPhotography\nStrategy' };
+  const direct = forge.buildHTML(raw);
+  const preview = forge.buildHTML(forge.validatedState(raw));
+  assert.equal(preview, direct);
+  assert.equal((preview.match(/<li>/g) || []).length, 3);
+  assert.equal((preview.match(/<main>/g) || []).length, 1);
+  assert.equal((preview.match(/<\/main>/g) || []).length, 1);
+});
+
+test('calm motion stops animation and speed changes duration', () => {
+  const slow = forge.sceneStyles({ ...state, speed: 0.5 });
+  const fast = forge.sceneStyles({ ...state, speed: 1 });
+  assert.match(slow, /forgeMotion 35s ease/);
+  assert.match(fast, /forgeMotion 17.5s ease/);
+  assert.match(forge.sceneStyles({ ...state, motion: 'calm' }), /animation:none!important/);
+});
+
+test('launch loads the portal visual and uses unique section identifiers', () => {
+  const html = read('index.html');
+  assert.match(html, /href="\.\/living-portal.css"/);
+  assert.match(html, /class="hero glass-tide"/);
+  const identifiers = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
+  assert.equal(new Set(identifiers).size, identifiers.length);
+});
+
 test('input limits and visual controls are enforced', () => {
   const controlled = forge.validatedState({
     name: 'x'.repeat(400),
