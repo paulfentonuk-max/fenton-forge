@@ -33,3 +33,15 @@ jobs:
           test -s launch/living-portal.css &&
           test -s launch/first-use.css &&
           test -s launch/README.md
+      - name: Enforce static launch payload boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_files=$(printf '%s\n' README.md builder.js first-use.css index.html living-portal.css release-ledger-2026-10-15.md release-ledger-2026-10-19.md styles.css | LC_ALL=C sort)
+          actual_files=$(git ls-tree -r --name-only HEAD launch/ | sed 's|^launch/||' | LC_ALL=C sort)
+          test "$actual_files" = "$expected_files"
+          test -z "$(git ls-tree -r HEAD launch/ | awk '$1 != "100644" {print}')"
+          test ! -e launch/package.json
+          test ! -e launch/node_modules
+          test ! -e launch/api
+          test ! -e launch/data
